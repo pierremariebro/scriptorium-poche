@@ -138,8 +138,10 @@ function chargerModele() {
   modele = pipeline("feature-extraction", "Xenova/multilingual-e5-small", {
     dtype: "q8",
     progress_callback: (p) => {
-      if (p.status === "progress" && p.file?.endsWith(".onnx"))
-        $("etat").textContent = `Chargement du modèle, une seule fois : ${Math.floor(p.progress)} % de 118 Mo…`;
+      if (p.status === "progress")
+        $("etat").textContent = p.file?.endsWith(".onnx")
+          ? `Chargement du modèle, une seule fois : ${Math.floor(p.progress)} % de 118 Mo…`
+          : `Préparation du modèle (${p.file}) : ${Math.floor(p.progress)} %…`;
     },
   }).then((m) => { $("etat").textContent = ""; return m; });
   return modele;
