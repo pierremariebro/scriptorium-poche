@@ -45,7 +45,7 @@
 <main>
   <section id="verrou">
     <p>Entrez le mot de passe du Monastère.</p>
-    <input id="mdp" type="password" autocomplete="current-password">
+    <input id="mdp" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false">
     <div class="ligne"><label><input id="retenir" type="checkbox" style="width:auto"> Retenir sur cet appareil</label></div>
     <div class="ligne"><button class="principal" id="ouvrir">Ouvrir</button></div>
     <div class="etat" id="etatVerrou"></div>
@@ -247,7 +247,8 @@ $("ongEvangile").onclick = () => onglet(false);
 $("chercher").onclick = chercher;
 $("lire").onclick = lire;
 $("ouvrir").onclick = async () => {
-  const mdp = $("mdp").value;
+  // Le clavier du téléphone met souvent une majuscule ou une espace finale : on les neutralise.
+  const mdp = $("mdp").value.trim().toLowerCase();
   if (await ouvrir(mdp) && $("retenir").checked) try { localStorage.setItem("mdp", mdp); } catch {}
 };
 $("mdp").onkeydown = (e) => { if (e.key === "Enter") $("ouvrir").click(); };
