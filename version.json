@@ -1,0 +1,9 @@
+{
+  "produit_le": "2026-10-27T17:40:11+01:00",
+  "sel": "30a040f44d6ff0abc4c8c2493b16e2da",
+  "iterations": 250000,
+  "segments": 22707,
+  "vecteurs": 17560,
+  "modele": "Xenova/multilingual-e5-small (q8)",
+  "corpus_sha256": "84a634e4602ea9f397bed5196c14785a47d990be2760ad4f11bfde17c0bc6c8e"
+}

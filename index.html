@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scriptorium de poche</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#5b3a1e">
+<style>
+  :root { --fond:#faf6ef; --texte:#2b2118; --doux:#7a6a58; --carte:#fff; --accent:#5b3a1e; --bord:#e4d9c6; --ldc:#7b2d26; --fil:#1f4e6b; --cat:#6b5a12; }
+  @media (prefers-color-scheme: dark) { :root { --fond:#1b1714; --texte:#ece4d8; --doux:#a89a88; --carte:#26211c; --accent:#d9b27c; --bord:#3a332b; --ldc:#e08a80; --fil:#8cc0e0; --cat:#d8c46a; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--fond); color:var(--texte); font:17px/1.55 Georgia, "Times New Roman", serif; }
+  header { padding:14px 16px 6px; }
+  h1 { font-size:21px; margin:0; color:var(--accent); }
+  .sous { color:var(--doux); font-size:14px; }
+  main { padding:0 16px 40px; max-width:820px; margin:auto; }
+  .onglets { display:flex; gap:8px; margin:10px 0 14px; }
+  .onglets button { flex:1; }
+  button { font:inherit; font-size:16px; padding:11px 12px; border-radius:10px; border:1px solid var(--bord); background:var(--carte); color:var(--texte); }
+  button.actif, button.principal { background:var(--accent); color:var(--fond); border-color:var(--accent); }
+  textarea, input { width:100%; font:inherit; padding:11px; border-radius:10px; border:1px solid var(--bord); background:var(--carte); color:var(--texte); }
+  textarea { min-height:88px; }
+  .ligne { display:flex; gap:8px; margin-top:8px; align-items:center; }
+  .ligne input { flex:1; }
+  h2 { font-size:17px; margin:22px 0 6px; padding-bottom:3px; border-bottom:2px solid var(--bord); }
+  h2.ldc, h2.fiat { color:var(--ldc); } h2.fil { color:var(--fil); } h2.cat { color:var(--cat); }
+  .carte { background:var(--carte); border:1px solid var(--bord); border-radius:10px; padding:10px 12px; margin:8px 0; }
+  .ref { font-size:13px; color:var(--doux); font-family:system-ui, sans-serif; }
+  .txt { margin-top:4px; white-space:pre-line; }
+  .court { max-height:8.5em; overflow:hidden; position:relative; }
+  .plus { font-size:14px; color:var(--accent); background:none; border:none; padding:4px 14px 4px 0; }
+  .lat { font-style:italic; color:var(--doux); border-left:3px solid var(--bord); padding-left:8px; margin-top:8px; }
+  .etat { color:var(--doux); font-size:15px; margin:10px 0; font-family:system-ui, sans-serif; }
+  .cache { display:none; }
+  label { font-size:15px; color:var(--doux); }
+  footer { color:var(--doux); font-size:12.5px; margin-top:30px; font-family:system-ui, sans-serif; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Scriptorium de poche</h1>
+  <div class="sous">Livre du Ciel · Écriture (Fillion, Vulgate) · Chaîne d'or — hors connexion</div>
+</header>
+<main>
+  <section id="verrou">
+    <p>Entrez le mot de passe du Monastère.</p>
+    <input id="mdp" type="password" autocomplete="current-password">
+    <div class="ligne"><label><input id="retenir" type="checkbox" style="width:auto"> Retenir sur cet appareil</label></div>
+    <div class="ligne"><button class="principal" id="ouvrir">Ouvrir</button></div>
+    <div class="etat" id="etatVerrou"></div>
+  </section>
+
+  <section id="app" class="cache">
+    <div class="onglets">
+      <button id="ongQuestion" class="actif">Question</button>
+      <button id="ongEvangile">Évangile du jour</button>
+    </div>
+
+    <div id="panQuestion">
+      <textarea id="question" placeholder="Ex. : l'abandon à la Volonté de Dieu dans la souffrance"></textarea>
+      <div class="ligne"><button class="principal" id="chercher">Chercher</button></div>
+    </div>
+
+    <div id="panEvangile" class="cache">
+      <div class="etat" id="jour"></div>
+      <div class="ligne"><input id="pericope" placeholder="Ex. : Lc 12, 39-48"><button class="principal" id="lire">Lire</button></div>
+    </div>
+
+    <div class="etat" id="etat"></div>
+    <div id="resultats"></div>
+  </section>
+  <footer id="pied"></footer>
+</main>
+
+<script type="module">
+import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.5";
+// Sur le PC (localhost), le modèle est servi depuis le dossier « modeles », qui n'est jamais publié.
+const SUR_LE_PC = ["localhost", "127.0.0.1"].includes(location.hostname);
+env.allowLocalModels = SUR_LE_PC;
+env.allowRemoteModels = !SUR_LE_PC;
+env.localModelPath = "modeles/";
+
+const $ = (id) => document.getElementById(id);
+const NOMS = { ldc: "Livre du Ciel", fiat: "Catéchisme Amen Fiat (Ph. Martin)", fil: "Écriture — Fillion", cat: "Chaîne d'or" };
+const LIVRES = { gn:1, ex:2, lv:3, nb:4, dt:5, jos:6, jg:7, rt:8, tb:17, jdt:18, est:19, jb:20, ps:21, pr:22, qo:23, ct:24, sg:25,
+  si:26, is:27, jr:28, lm:29, ba:30, ez:31, dn:32, os:33, jl:34, am:35, ab:36, jon:37, mi:38, na:39, ha:40, so:41, ag:42, za:43,
+  ml:44, "1m":45, "2m":46, mt:47, mc:48, lc:49, jn:50, ac:51, rm:52, "1co":53, "2co":54, ga:55, ep:56, ph:57, col:58,
+  "1th":59, "2th":60, "1tm":61, "2tm":62, tt:63, phm:64, he:65, jc:66, "1p":67, "2p":68, "1jn":69, "2jn":70, "3jn":71, jude:72, ap:73,
+  matthieu:47, marc:48, luc:49, jean:50, "1r":9, "2r":10 };
+const EVANGILES = { 47: "Matthieu", 48: "Marc", 49: "Luc", 50: "Jean" };
+
+let segs, index, vec, parCorpus, modele, dimanches = {};
+
+// ---------- Déchiffrement ----------
+async function cle(mdp, version) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(mdp), "PBKDF2", false, ["deriveKey"]);
+  const sel = Uint8Array.from(version.sel.match(/../g), (h) => parseInt(h, 16));
+  return crypto.subtle.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt: sel, iterations: version.iterations },
+    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+}
+async function dechiffrer(k, url) {
+  const brut = new Uint8Array(await (await fetch(url)).arrayBuffer());
+  return crypto.subtle.decrypt({ name: "AES-GCM", iv: brut.slice(0, 12) }, k, brut.slice(12));
+}
+async function degzip(buf) {
+  const flux = new Blob([buf]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return new Response(flux).text();
+}
+
+async function ouvrir(mdp) {
+  $("etatVerrou").textContent = "Ouverture…";
+  const version = await (await fetch("version.json")).json();
+  const k = await cle(mdp, version);
+  let donnees;
+  try { donnees = JSON.parse(await degzip(await dechiffrer(k, "donnees.bin"))); }
+  catch { $("etatVerrou").textContent = "Mot de passe incorrect."; return false; }
+  segs = donnees.segments; index = donnees.index;
+  vec = new Int8Array(await dechiffrer(k, "vecteurs.bin"));
+  parCorpus = { ldc: [], fiat: [], fil: [], cat: [] };
+  index.forEach((ligne, rang) => parCorpus[segs[ligne].c]?.push(rang));
+  try { dimanches = await (await fetch("dimanches.json")).json(); } catch {}
+  $("pied").textContent = `${segs.length} segments · version du ${version.produit_le.slice(0, 10)} · modèle ${version.modele}. ` +
+    "Usage personnel ; références à vérifier dans les éditions avant toute citation.";
+  $("verrou").classList.add("cache"); $("app").classList.remove("cache");
+  preparerJour();
+  chargerModele();
+  return true;
+}
+
+// ---------- Modèle et recherche ----------
+async function chargerModele() {
+  if (modele) return modele;
+  $("etat").textContent = "Chargement du modèle (la première fois : environ 120 Mo, ensuite hors connexion)…";
+  modele = await pipeline("feature-extraction", "Xenova/multilingual-e5-small", { dtype: "q8" });
+  $("etat").textContent = "";
+  return modele;
+}
+async function vecteur(texte) {
+  const m = await chargerModele();
+  return (await m("query: " + texte, { pooling: "mean", normalize: true, truncation: true, max_length: 512 })).data;
+}
+function classer(q, rangs, n) {
+  const res = rangs.map((r) => { let s = 0; const o = r * 384; for (let j = 0; j < 384; j++) s += q[j] * vec[o + j]; return [s / 127, r]; });
+  res.sort((a, b) => b[0] - a[0]);
+  return res.slice(0, n).map(([s, r]) => ({ score: s, seg: segs[index[r]] }));
+}
+
+// ---------- Affichage ----------
+function carte(seg, score) {
+  const d = document.createElement("div"); d.className = "carte";
+  d.innerHTML = `<div class="ref"></div><div class="txt court"></div>`;
+  d.querySelector(".ref").textContent = seg.r + (score ? ` · ${score.toFixed(2)}` : "");
+  d.querySelector(".txt").textContent = seg.t;
+  const b = document.createElement("button"); b.className = "plus"; b.textContent = "Lire tout";
+  b.onclick = () => { d.querySelector(".txt").classList.toggle("court"); b.textContent = b.textContent === "Lire tout" ? "Réduire" : "Lire tout"; };
+  d.append(b);
+  if (seg.c === "fil") {
+    const lat = vulgate(seg.ol, seg.ch, seg.v1, seg.v2);
+    if (lat.length) {
+      const l = document.createElement("button"); l.className = "plus"; l.textContent = " · Vulgate";
+      l.onclick = () => { if (d.querySelector(".lat")) return d.querySelector(".lat").remove();
+        const v = document.createElement("div"); v.className = "lat txt"; v.textContent = lat.map((s) => s.t).join("\n"); d.append(v); };
+      d.append(l);
+    }
+  }
+  return d;
+}
+function section(code, titre, liste) {
+  const f = document.createDocumentFragment();
+  const h = document.createElement("h2"); h.className = code; h.textContent = titre; f.append(h);
+  if (!liste.length) { const p = document.createElement("div"); p.className = "etat"; p.textContent = "Rien trouvé."; f.append(p); }
+  liste.forEach((x) => f.append(carte(x.seg, x.score)));
+  return f;
+}
+function vulgate(ol, ch, v1, v2) {
+  return segs.filter((s) => s.c === "vul" && s.ol === ol && s.ch === ch && s.v1 <= v2 && s.v2 >= v1);
+}
+
+// ---------- Question par thème ----------
+async function chercher() {
+  const q = $("question").value.trim(); if (!q) return;
+  $("resultats").innerHTML = ""; $("etat").textContent = "Recherche…";
+  const v = await vecteur(q);
+  const r = $("resultats");
+  r.append(section("ldc", NOMS.ldc, classer(v, parCorpus.ldc, 6)));
+  r.append(section("fiat", NOMS.fiat, classer(v, parCorpus.fiat, 4)));
+  r.append(section("fil", NOMS.fil, classer(v, parCorpus.fil, 5)));
+  r.append(section("cat", NOMS.cat, classer(v, parCorpus.cat, 5)));
+  $("etat").textContent = "";
+}
+
+// ---------- Évangile du jour ----------
+function analyser(ref) {
+  const m = ref.trim().toLowerCase().replace(/\s+/g, " ").match(/^([1-3]?\s?[a-zéèêûô]+)\.?\s*(\d+)(?:\s*[,:.]\s*(\d+)(?:\s*[-–]\s*(\d+))?)?/);
+  if (!m) return null;
+  const ol = LIVRES[m[1].replace(" ", "")]; if (!ol) return null;
+  const v1 = m[3] ? +m[3] : 1, v2 = m[4] ? +m[4] : (m[3] ? +m[3] : 999);
+  return { ol, ch: +m[2], v1, v2 };
+}
+function preparerJour() {
+  const auj = new Date(), iso = auj.toLocaleDateString("sv-SE");
+  const d = dimanches[iso];
+  $("jour").textContent = auj.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) +
+    (d ? ` — ${d.titre}${d.remplace ? " (ou : " + d.remplace + ")" : ""} : ${d.evangile}` :
+         " — tapez la référence de l'Évangile (le calendrier n'est connu que pour les dimanches du temps ordinaire).");
+  if (d) $("pericope").value = d.evangile.split(/\s*\(|;/)[0];
+}
+async function lire() {
+  const p = analyser($("pericope").value);
+  if (!p) { $("etat").textContent = "Référence non reconnue. Exemple : Lc 12, 39-48"; return; }
+  $("resultats").innerHTML = ""; $("etat").textContent = "Lecture…";
+  const texte = segs.filter((s) => s.c === "fil" && s.ol === p.ol && s.ch === p.ch && s.v1 <= p.v2 && s.v2 >= p.v1)
+    .sort((a, b) => a.v1 - b.v1);
+  const r = $("resultats");
+  r.append(section("fil", "Texte — Fillion (Vulgate en regard)", texte.map((s) => ({ seg: s }))));
+  if (!texte.length) { $("etat").textContent = "Passage introuvable dans Fillion."; return; }
+  const v = await vecteur(texte.map((s) => s.t).join(" "));
+  const ev = EVANGILES[p.ol];
+  if (ev) {
+    const rangs = parCorpus.cat.filter((rg) => { const s = segs[index[rg]]; return s.ev === ev && s.ch === p.ch; });
+    r.append(section("cat", `Chaîne d'or sur ${ev}, chapitre ${p.ch}`, classer(v, rangs, 6)));
+  }
+  r.append(section("ldc", "Livre du Ciel — passages proches", classer(v, parCorpus.ldc, 6)));
+  r.append(section("fiat", "Catéchisme Amen Fiat — questions proches", classer(v, parCorpus.fiat, 3)));
+  $("etat").textContent = "";
+}
+
+// ---------- Interface ----------
+function onglet(q) {
+  $("ongQuestion").classList.toggle("actif", q); $("ongEvangile").classList.toggle("actif", !q);
+  $("panQuestion").classList.toggle("cache", !q); $("panEvangile").classList.toggle("cache", q);
+  $("resultats").innerHTML = "";
+}
+$("ongQuestion").onclick = () => onglet(true);
+$("ongEvangile").onclick = () => onglet(false);
+$("chercher").onclick = chercher;
+$("lire").onclick = lire;
+$("ouvrir").onclick = async () => {
+  const mdp = $("mdp").value;
+  if (await ouvrir(mdp) && $("retenir").checked) try { localStorage.setItem("mdp", mdp); } catch {}
+};
+$("mdp").onkeydown = (e) => { if (e.key === "Enter") $("ouvrir").click(); };
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+try { const m = localStorage.getItem("mdp"); if (m) ouvrir(m); } catch {}
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "Scriptorium de poche",
+  "short_name": "Scriptorium",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#faf6ef",
+  "theme_color": "#5b3a1e",
+  "lang": "fr"
+}
