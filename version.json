@@ -1,9 +1,33 @@
 {
-  "produit_le": "2026-10-27T17:40:11+01:00",
-  "sel": "30a040f44d6ff0abc4c8c2493b16e2da",
+  "produit_le": "2026-10-27T18:00:51+01:00",
+  "sel": "7bfd56863bf5f2fb998a382ff1d69545",
   "iterations": 250000,
   "segments": 22707,
   "vecteurs": 17560,
+  "parties": {
+    "donnees.bin": [
+      "donnees.bin.00",
+      "donnees.bin.01",
+      "donnees.bin.02",
+      "donnees.bin.03",
+      "donnees.bin.04",
+      "donnees.bin.05",
+      "donnees.bin.06",
+      "donnees.bin.07",
+      "donnees.bin.08",
+      "donnees.bin.09",
+      "donnees.bin.10"
+    ],
+    "vecteurs.bin": [
+      "vecteurs.bin.00",
+      "vecteurs.bin.01",
+      "vecteurs.bin.02",
+      "vecteurs.bin.03",
+      "vecteurs.bin.04",
+      "vecteurs.bin.05",
+      "vecteurs.bin.06"
+    ]
+  },
   "modele": "Xenova/multilingual-e5-small (q8)",
   "corpus_sha256": "84a634e4602ea9f397bed5196c14785a47d990be2760ad4f11bfde17c0bc6c8e"
 }

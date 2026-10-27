@@ -99,8 +99,10 @@ async function cle(mdp, version) {
   return crypto.subtle.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt: sel, iterations: version.iterations },
     base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
 }
-async function dechiffrer(k, url) {
-  const brut = new Uint8Array(await (await fetch(url)).arrayBuffer());
+async function dechiffrer(k, parties) {
+  const morceaux = await Promise.all(parties.map(async (p) => new Uint8Array(await (await fetch(p)).arrayBuffer())));
+  const brut = new Uint8Array(morceaux.reduce((n, m) => n + m.length, 0));
+  morceaux.reduce((o, m) => (brut.set(m, o), o + m.length), 0);
   return crypto.subtle.decrypt({ name: "AES-GCM", iv: brut.slice(0, 12) }, k, brut.slice(12));
 }
 async function degzip(buf) {
@@ -113,10 +115,10 @@ async function ouvrir(mdp) {
   const version = await (await fetch("version.json")).json();
   const k = await cle(mdp, version);
   let donnees;
-  try { donnees = JSON.parse(await degzip(await dechiffrer(k, "donnees.bin"))); }
+  try { donnees = JSON.parse(await degzip(await dechiffrer(k, version.parties["donnees.bin"]))); }
   catch { $("etatVerrou").textContent = "Mot de passe incorrect."; return false; }
   segs = donnees.segments; index = donnees.index;
-  vec = new Int8Array(await dechiffrer(k, "vecteurs.bin"));
+  vec = new Int8Array(await dechiffrer(k, version.parties["vecteurs.bin"]));
   parCorpus = { ldc: [], fiat: [], fil: [], cat: [] };
   index.forEach((ligne, rang) => parCorpus[segs[ligne].c]?.push(rang));
   try { dimanches = await (await fetch("dimanches.json")).json(); } catch {}
