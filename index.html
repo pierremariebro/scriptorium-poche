@@ -131,11 +131,17 @@ async function ouvrir(mdp) {
 }
 
 // ---------- Modèle et recherche ----------
-async function chargerModele() {
+// Une seule promesse : deux appels pendant le premier chargement ne téléchargent pas deux fois le modèle.
+function chargerModele() {
   if (modele) return modele;
   $("etat").textContent = "Chargement du modèle (la première fois : environ 120 Mo, ensuite hors connexion)…";
-  modele = await pipeline("feature-extraction", "Xenova/multilingual-e5-small", { dtype: "q8" });
-  $("etat").textContent = "";
+  modele = pipeline("feature-extraction", "Xenova/multilingual-e5-small", {
+    dtype: "q8",
+    progress_callback: (p) => {
+      if (p.status === "progress" && p.file?.endsWith(".onnx"))
+        $("etat").textContent = `Chargement du modèle, une seule fois : ${Math.floor(p.progress)} % de 118 Mo…`;
+    },
+  }).then((m) => { $("etat").textContent = ""; return m; });
   return modele;
 }
 async function vecteur(texte) {
