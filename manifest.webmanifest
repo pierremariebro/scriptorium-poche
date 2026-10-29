@@ -2,8 +2,13 @@
   "name": "Scriptorium de poche",
   "short_name": "Scriptorium",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#faf6ef",
   "theme_color": "#5b3a1e",
-  "lang": "fr"
+  "lang": "fr",
+  "icons": [
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
 }
