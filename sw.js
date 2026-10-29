@@ -1,6 +1,6 @@
 // Garde en cache la page, les données, la bibliothèque et le modèle : tout fonctionne ensuite hors connexion.
 // Les fichiers du site sont rafraîchis quand le réseau est là ; le modèle et la bibliothèque restent en cache.
-const CACHE = "scriptorium-poche-v1";
+const CACHE = "scriptorium-poche-v1";  // ne pas changer sans raison : l'activation efface les anciens caches
 // Les morceaux des données (donnees.bin.NN, vecteurs.bin.NN) sont gardés à leur premier chargement.
 const SITE = ["./", "index.html", "manifest.webmanifest", "version.json", "dimanches.json"];
 
@@ -16,7 +16,8 @@ self.addEventListener("fetch", (e) => {
     const garde = await c.match(e.request);
     if (garde && !local) return garde;                       // bibliothèque et modèle : le cache d'abord
     try {
-      const rep = await fetch(e.request);
+      // no-cache : revalider auprès du site, sinon le cache HTTP sert une ancienne version des données
+      const rep = await fetch(e.request, local ? { cache: "no-cache" } : {});
       if (rep.ok) c.put(e.request, rep.clone());
       return rep;
     } catch {

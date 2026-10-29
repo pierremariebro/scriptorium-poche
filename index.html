@@ -90,7 +90,7 @@ const LIVRES = { gn:1, ex:2, lv:3, nb:4, dt:5, jos:6, jg:7, rt:8, tb:17, jdt:18,
   matthieu:47, marc:48, luc:49, jean:50, "1r":9, "2r":10 };
 const EVANGILES = { 47: "Matthieu", 48: "Marc", 49: "Luc", 50: "Jean" };
 
-let segs, index, vec, parCorpus, modele, dimanches = {};
+let segs, index, vec, parCorpus, modele, liens = {}, dimanches = {};
 
 // ---------- Déchiffrement ----------
 async function cle(mdp, version) {
@@ -100,7 +100,7 @@ async function cle(mdp, version) {
     base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
 }
 async function dechiffrer(k, parties) {
-  const morceaux = await Promise.all(parties.map(async (p) => new Uint8Array(await (await fetch(p)).arrayBuffer())));
+  const morceaux = await Promise.all(parties.map(async (p) => new Uint8Array(await (await fetch(p, { cache: "no-cache" })).arrayBuffer())));
   const brut = new Uint8Array(morceaux.reduce((n, m) => n + m.length, 0));
   morceaux.reduce((o, m) => (brut.set(m, o), o + m.length), 0);
   return crypto.subtle.decrypt({ name: "AES-GCM", iv: brut.slice(0, 12) }, k, brut.slice(12));
@@ -112,12 +112,12 @@ async function degzip(buf) {
 
 async function ouvrir(mdp) {
   $("etatVerrou").textContent = "Ouverture…";
-  const version = await (await fetch("version.json")).json();
+  const version = await (await fetch("version.json", { cache: "no-cache" })).json();
   const k = await cle(mdp, version);
   let donnees;
   try { donnees = JSON.parse(await degzip(await dechiffrer(k, version.parties["donnees.bin"]))); }
   catch { $("etatVerrou").textContent = "Mot de passe incorrect."; return false; }
-  segs = donnees.segments; index = donnees.index;
+  segs = donnees.segments; index = donnees.index; liens = donnees.liens || {};
   vec = new Int8Array(await dechiffrer(k, version.parties["vecteurs.bin"]));
   parCorpus = { ldc: [], fiat: [], fil: [], cat: [] };
   index.forEach((ligne, rang) => parCorpus[segs[ligne].c]?.push(rang));
@@ -226,8 +226,22 @@ async function lire() {
   const r = $("resultats");
   r.append(section("fil", "Texte — Fillion (Vulgate en regard)", texte.map((s) => ({ seg: s }))));
   if (!texte.length) { $("etat").textContent = "Passage introuvable dans Fillion."; return; }
-  const v = await vecteur(texte.map((s) => s.t).join(" "));
   const ev = EVANGILES[p.ol];
+  // Évangiles : liens BGE-M3 préréglés sur le PC (meilleure qualité, sans le modèle du téléphone)
+  const lignes = texte.map((s) => segs.indexOf(s));
+  if (ev && lignes.every((l) => liens[l])) {
+    const fusion = (code, n) => {
+      const best = new Map();
+      lignes.forEach((l) => liens[l][code].forEach(([x, sc]) => best.set(x, Math.max(best.get(x) ?? 0, sc))));
+      return [...best].sort((a, b) => b[1] - a[1]).slice(0, n).map(([x, sc]) => ({ seg: segs[x], score: sc }));
+    };
+    r.append(section("cat", `Chaîne d'or sur ${ev}, chapitre ${p.ch}`, fusion("cat", 6)));
+    r.append(section("ldc", "Livre du Ciel — passages proches", fusion("ldc", 6)));
+    r.append(section("fiat", "Catéchisme Amen Fiat — questions proches", fusion("fiat", 3)));
+    $("etat").textContent = "";
+    return;
+  }
+  const v = await vecteur(texte.map((s) => s.t).join(" "));
   if (ev) {
     const rangs = parCorpus.cat.filter((rg) => { const s = segs[index[rg]]; return s.ev === ev && s.ch === p.ch; });
     r.append(section("cat", `Chaîne d'or sur ${ev}, chapitre ${p.ch}`, classer(v, rangs, 6)));
