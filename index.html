@@ -143,7 +143,8 @@ function chargerModele() {
           ? `Chargement du modèle, une seule fois : ${Math.floor(p.progress)} % de 118 Mo…`
           : `Préparation du modèle (${p.file}) : ${Math.floor(p.progress)} %…`;
     },
-  }).then((m) => { $("etat").textContent = ""; return m; });
+  }).then((m) => { $("etat").textContent = ""; modele = m; return m; },
+          (e) => { modele = null; throw e; });  // un échec permet de réessayer
   return modele;
 }
 async function vecteur(texte) {
@@ -244,8 +245,13 @@ function onglet(q) {
 }
 $("ongQuestion").onclick = () => onglet(true);
 $("ongEvangile").onclick = () => onglet(false);
-$("chercher").onclick = chercher;
-$("lire").onclick = lire;
+// Toute erreur s'affiche à l'écran : sinon la page semble ne rien faire.
+const signaler = (e) => { $("etat").textContent = "Erreur : " + (e?.message || e) + " — envoyez une capture à Claude."; };
+const garde = (f) => () => f().catch(signaler);
+window.addEventListener("unhandledrejection", (ev) => signaler(ev.reason));
+window.addEventListener("error", (ev) => signaler(ev.message));
+$("chercher").onclick = garde(chercher);
+$("lire").onclick = garde(lire);
 $("ouvrir").onclick = async () => {
   // Le clavier du téléphone met souvent une majuscule ou une espace finale : on les neutralise.
   const mdp = $("mdp").value.trim().toLowerCase();
