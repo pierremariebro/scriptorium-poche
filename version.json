@@ -1,6 +1,6 @@
 {
-  "produit_le": "2026-10-29T19:30:53+01:00",
-  "sel": "d441670800c9cc3a9c143b7ecbe56dbc",
+  "produit_le": "2026-10-29T20:27:18+01:00",
+  "sel": "01d559d65d9397410d55675d65fe9104",
   "iterations": 250000,
   "segments": 22707,
   "vecteurs": 17560,
@@ -16,7 +16,10 @@
       "donnees.bin.07",
       "donnees.bin.08",
       "donnees.bin.09",
-      "donnees.bin.10"
+      "donnees.bin.10",
+      "donnees.bin.11",
+      "donnees.bin.12",
+      "donnees.bin.13"
     ],
     "vecteurs.bin": [
       "vecteurs.bin.00",

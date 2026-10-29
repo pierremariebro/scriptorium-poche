@@ -92,7 +92,7 @@ const LIVRES = { gn:1, ex:2, lv:3, nb:4, dt:5, jos:6, jg:7, rt:8, tb:17, jdt:18,
   matthieu:47, marc:48, luc:49, jean:50, "1r":9, "2r":10 };
 const EVANGILES = { 47: "Matthieu", 48: "Marc", 49: "Luc", 50: "Jean" };
 
-let segs, index, vec, parCorpus, modele, liens = {}, dimanches = {};
+let segs, index, vec, parCorpus, modele, liens = {}, catv = [], dimanches = {};
 
 // ---------- Déchiffrement ----------
 async function cle(mdp, version) {
@@ -119,7 +119,7 @@ async function ouvrir(mdp) {
   let donnees;
   try { donnees = JSON.parse(await degzip(await dechiffrer(k, version.parties["donnees.bin"]))); }
   catch { $("etatVerrou").textContent = "Mot de passe incorrect."; return false; }
-  segs = donnees.segments; index = donnees.index; liens = donnees.liens || {};
+  segs = donnees.segments; index = donnees.index; liens = donnees.liens || {}; catv = donnees.catv || [];
   vec = new Int8Array(await dechiffrer(k, version.parties["vecteurs.bin"]));
   parCorpus = { ldc: [], fiat: [], fil: [], cat: [] };
   index.forEach((ligne, rang) => parCorpus[segs[ligne].c]?.push(rang));
@@ -237,7 +237,13 @@ async function lire() {
       lignes.forEach((l) => liens[l][code].forEach(([x, sc]) => best.set(x, Math.max(best.get(x) ?? 0, sc))));
       return [...best].sort((a, b) => b[1] - a[1]).slice(0, n).map(([x, sc]) => ({ seg: segs[x], score: sc }));
     };
-    r.append(section("cat", `Chaîne d'or sur ${ev}, chapitre ${p.ch}`, fusion("cat", 6)));
+    const vv = catv.filter((c) => c.ol === p.ol && c.ch === p.ch && c.v >= p.v1 && c.v <= p.v2);
+    if (vv.length) {
+      r.append(section("cat", `Chaîne d'or sur ${ev} ${p.ch} — verset par verset`, vv.map((c) => ({ seg: { c: "cat", t: c.t,
+        r: `Chaîne d'or sur ${ev} ${c.ch}, ${c.v}${c.cite ? "" : " (suite du commentaire)"} — rattachement automatique, à vérifier` } }))));
+    } else {
+      r.append(section("cat", `Chaîne d'or sur ${ev}, chapitre ${p.ch}`, fusion("cat", 6)));
+    }
     r.append(section("ldc", "Livre du Ciel — passages proches", fusion("ldc", 6)));
     r.append(section("fiat", "Catéchisme Amen Fiat — questions proches", fusion("fiat", 3)));
     $("etat").textContent = "";
