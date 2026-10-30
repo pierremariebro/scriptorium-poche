@@ -1,6 +1,19 @@
 {
-  "produit_le": "2026-10-29T20:27:18+01:00",
-  "sel": "01d559d65d9397410d55675d65fe9104",
+  "produit_le": "2026-10-30T15:19:42+01:00",
+  "enveloppes": [
+    {
+      "sel": "9af37b43602324520d7c5d1169b308c8",
+      "cle": "b905717732ad4037c9e3a7cf50395827e930d42d79378a205c0a6602a4266445a6c909e55884167a7d9280b209da55a80ff3bf229243d9323733d9ed"
+    },
+    {
+      "sel": "5d8e9ed12c6abb5daa837ce3dd039dd2",
+      "cle": "69e926d1b470ab87e320704a35c9f8520c2c52c5d802473b1d2b910e6d36df807023be96361969b6f1a5b1831f490234fb8a75deed02c641cc5130d1"
+    },
+    {
+      "sel": "793b0810b007159ca4175c12a44df0d5",
+      "cle": "e162700e8d6a7ba42f8e80ea2a9d05ae50ade1ffc2b8fba18ebeadcb5e0da14bfefd3e166d70aef3e2db5ea7905e70b7547b1dafbbcca2f5f8d4571b"
+    }
+  ],
   "iterations": 250000,
   "segments": 22707,
   "vecteurs": 17560,

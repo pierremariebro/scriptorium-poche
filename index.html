@@ -95,11 +95,20 @@ const EVANGILES = { 47: "Matthieu", 48: "Marc", 49: "Luc", 50: "Jean" };
 let segs, index, vec, parCorpus, modele, liens = {}, catv = [], dimanches = {};
 
 // ---------- Déchiffrement ----------
+const octets = (hex) => Uint8Array.from(hex.match(/../g), (h) => parseInt(h, 16));
+// Chaque mot de passe (le Père, les retraitants) ouvre sa propre enveloppe, qui contient la clé des données.
 async function cle(mdp, version) {
   const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(mdp), "PBKDF2", false, ["deriveKey"]);
-  const sel = Uint8Array.from(version.sel.match(/../g), (h) => parseInt(h, 16));
-  return crypto.subtle.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt: sel, iterations: version.iterations },
-    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  for (const env of version.enveloppes) {
+    const kek = await crypto.subtle.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt: octets(env.sel), iterations: version.iterations },
+      base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+    const c = octets(env.cle);
+    try {
+      const brute = await crypto.subtle.decrypt({ name: "AES-GCM", iv: c.slice(0, 12) }, kek, c.slice(12));
+      return crypto.subtle.importKey("raw", brute, "AES-GCM", false, ["decrypt"]);
+    } catch { /* pas cette enveloppe */ }
+  }
+  return null;
 }
 async function dechiffrer(k, parties) {
   const morceaux = await Promise.all(parties.map(async (p) => new Uint8Array(await (await fetch(p, { cache: "no-cache" })).arrayBuffer())));
@@ -116,9 +125,10 @@ async function ouvrir(mdp) {
   $("etatVerrou").textContent = "Ouverture…";
   const version = await (await fetch("version.json", { cache: "no-cache" })).json();
   const k = await cle(mdp, version);
+  if (!k) { $("etatVerrou").textContent = "Mot de passe incorrect."; return false; }
   let donnees;
   try { donnees = JSON.parse(await degzip(await dechiffrer(k, version.parties["donnees.bin"]))); }
-  catch { $("etatVerrou").textContent = "Mot de passe incorrect."; return false; }
+  catch { $("etatVerrou").textContent = "Données incomplètes : rechargez la page dans quelques minutes."; return false; }
   segs = donnees.segments; index = donnees.index; liens = donnees.liens || {}; catv = donnees.catv || [];
   vec = new Int8Array(await dechiffrer(k, version.parties["vecteurs.bin"]));
   parCorpus = { ldc: [], fiat: [], fil: [], cat: [] };
