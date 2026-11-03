@@ -1,22 +1,22 @@
 {
-  "produit_le": "2026-10-30T15:19:42+01:00",
+  "produit_le": "2026-11-03T12:18:27+01:00",
   "enveloppes": [
     {
-      "sel": "9af37b43602324520d7c5d1169b308c8",
-      "cle": "b905717732ad4037c9e3a7cf50395827e930d42d79378a205c0a6602a4266445a6c909e55884167a7d9280b209da55a80ff3bf229243d9323733d9ed"
+      "sel": "fc054d1d494556c21c22bbb00e6c932a",
+      "cle": "ffc2c758ea47ddedd8029f14a2139914057a9d591aac4fb9ef42b53a2c267f923f5c5f6c4a27a368563c9ab8333b531aa8428e07eaffb028a1a620e9"
     },
     {
-      "sel": "5d8e9ed12c6abb5daa837ce3dd039dd2",
-      "cle": "69e926d1b470ab87e320704a35c9f8520c2c52c5d802473b1d2b910e6d36df807023be96361969b6f1a5b1831f490234fb8a75deed02c641cc5130d1"
+      "sel": "c29ada93e464320483983a817dd48db7",
+      "cle": "3a9b3939913cbb0656bf4ad90953b8eaaeda198d35b4bce9a8773037736aa0f3ef951b73860b6ac7883f2ce4fcc3d397df021c38168d2050500eed01"
     },
     {
-      "sel": "793b0810b007159ca4175c12a44df0d5",
-      "cle": "e162700e8d6a7ba42f8e80ea2a9d05ae50ade1ffc2b8fba18ebeadcb5e0da14bfefd3e166d70aef3e2db5ea7905e70b7547b1dafbbcca2f5f8d4571b"
+      "sel": "f43cb6c148a91f0405174e3d86f52e42",
+      "cle": "b7f7ba51ddf283132daad3010f905928fbc7f3faf7344da18bdfeacb39ca015f58c39a237bd93c372d42ffbcd55b51b7f336a3f06af2f74d605e5a32"
     }
   ],
   "iterations": 250000,
-  "segments": 22707,
-  "vecteurs": 17560,
+  "segments": 27410,
+  "vecteurs": 22263,
   "parties": {
     "donnees.bin": [
       "donnees.bin.00",
@@ -32,7 +32,11 @@
       "donnees.bin.10",
       "donnees.bin.11",
       "donnees.bin.12",
-      "donnees.bin.13"
+      "donnees.bin.13",
+      "donnees.bin.14",
+      "donnees.bin.15",
+      "donnees.bin.16",
+      "donnees.bin.17"
     ],
     "vecteurs.bin": [
       "vecteurs.bin.00",
@@ -41,9 +45,11 @@
       "vecteurs.bin.03",
       "vecteurs.bin.04",
       "vecteurs.bin.05",
-      "vecteurs.bin.06"
+      "vecteurs.bin.06",
+      "vecteurs.bin.07",
+      "vecteurs.bin.08"
     ]
   },
   "modele": "Xenova/multilingual-e5-small (q8)",
-  "corpus_sha256": "84a634e4602ea9f397bed5196c14785a47d990be2760ad4f11bfde17c0bc6c8e"
+  "corpus_sha256": "c77a71e189d149fc793b48252addfac10dc8bd41307cd15ee3784023cece5d98"
 }
