@@ -1,22 +1,22 @@
 {
-  "produit_le": "2026-11-04T12:42:49+01:00",
+  "produit_le": "2026-11-04T12:52:05+01:00",
   "enveloppes": [
     {
-      "sel": "8d46cb27d6fe1cf3f71d8caa4b1e4435",
-      "cle": "a67bb1f81478d4c1c9d0786d3cfc436114fe8920b0b7fac73b28ca9b1a0373e289a40994d2f978b676a58d01f3fa452b5f53b698b7dfe38fff3adb09"
+      "sel": "fba9d225a34cb6776fdbe9d5b97b8c0f",
+      "cle": "719f0e4cb35d028315742d1db665f371898f83d120d8498ac5e4532e83290344bf631569ecc2619bd845b6f2338542a6948c96e7e4e4840f7c47a909"
     },
     {
-      "sel": "2c9c29d7fdac22703191cb3114233796",
-      "cle": "dd037de4459064643ef8be3ea26fcb45c399d8a1701c252b0c22880ef740a3a0639454a80a4ee0ee9035473869c23d072cba97df519ece6804f512f2"
+      "sel": "aed803a776191816052162c1208e7913",
+      "cle": "d5ca931c7aaaab1e1128a51a51840c7b7342ab5a604ecc7b78cfa2573e42c7d6f4e925de6385cfbafcc03d39ea501100e21feb3ef1d8729e4d9af1be"
     },
     {
-      "sel": "b71f9573479cc1fa8aa63b20df39290c",
-      "cle": "8aee2ec44850d840eb92f1828e780d2529a9fbee1a3924bb5bc39278e69d03197a09584363390c144f35004bab4a9af1fb9f7d4efda9bcd1a75e5d3e"
+      "sel": "89624a7fa7515e501f7715526f3eae8d",
+      "cle": "84512a2c63b17f0a255034025d74eae2ecf53e792427ea0b84b12df58d1ba14aad5987b2b00eda37d08c38d6d8ec2e8b560857833e0592dff81736ec"
     }
   ],
   "iterations": 250000,
-  "segments": 37377,
-  "vecteurs": 32230,
+  "segments": 37670,
+  "vecteurs": 32523,
   "parties": {
     "donnees.bin": [
       "donnees.bin.00",
@@ -60,5 +60,5 @@
     ]
   },
   "modele": "Xenova/multilingual-e5-small (q8)",
-  "corpus_sha256": "b576b2221a1077caa43b177c4baeea2c1a8c007875944fe02f1b22b8192f635c"
+  "corpus_sha256": "691e5a0e6dbc9717263c9237989526baf47e02134d2c10a04fdf16e0c69be21f"
 }

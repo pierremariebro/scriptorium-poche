@@ -35,6 +35,8 @@
   .lat { font-style:italic; color:var(--doux); border-left:3px solid var(--bord); padding-left:8px; margin-top:8px; }
   .etat { color:var(--doux); font-size:15px; margin:10px 0; font-family:system-ui, sans-serif; }
   .cache { display:none; }
+  .avis { font-size:13.5px; color:var(--doux); border:1px solid var(--bord); border-radius:10px; padding:8px 12px; margin:10px 0;
+          font-family:system-ui, sans-serif; line-height:1.4; }
   label { font-size:15px; color:var(--doux); }
   footer { color:var(--doux); font-size:12.5px; margin-top:30px; font-family:system-ui, sans-serif; }
 </style>
@@ -42,8 +44,12 @@
 <body>
 <header>
   <h1>Scriptorium de poche</h1>
-  <div class="sous">Livre du Ciel · Écriture (Fillion, Vulgate) · Chaîne d'or — hors connexion</div>
+  <div class="sous">Livre du Ciel · Écriture (Fillion, Vulgate) · Pères, docteurs et Carmel — hors connexion</div>
 </header>
+<!-- Avertissement demandé par le Père (04/11/2026) -->
+<div class="avis"><b>Avertissement.</b> Les textes et ouvrages proposés à votre réflexion et à votre méditation ne sont pas tous libres
+  de droits. Par respect pour les auteurs et les éditeurs, le Scriptorium de poche est réservé aux retraitants du Monastère numérique,
+  pour un usage <b>strictement privé</b>. Il n'est consultable que par celles et ceux qui ont reçu personnellement le mot de passe.</div>
 <main>
   <section id="verrou">
     <p>Entrez le mot de passe du Monastère.</p>
@@ -85,7 +91,7 @@ env.localModelPath = "modeles/";
 
 const $ = (id) => document.getElementById(id);
 const NOMS = { ldc: "Livre du Ciel", fiat: "Catéchisme Amen Fiat (Ph. Martin)", lui: "Ouvrages sur Luisa et la Divine Volonté", fil: "Écriture — Fillion", cat: "Chaîne d'or", chv: "Bx Antoine Chevrier — Le Véritable Disciple",
-  dlt: "Dom Paul Delatte — Évangile et saint Paul", car: "Spiritualité du Carmel — Thérèse d'Avila, Jean de la Croix, Élisabeth de la Trinité", cec: "Catéchisme de l'Église catholique", dz: "Denzinger" };
+  dlt: "Dom Paul Delatte — Évangile et saint Paul", jd: "Saint Jean Damascène — Exposé exact de la foi orthodoxe", car: "Spiritualité du Carmel — Thérèse d'Avila, Jean de la Croix, Élisabeth de la Trinité", cec: "Catéchisme de l'Église catholique", dz: "Denzinger" };
 const LIVRES = { gn:1, ex:2, lv:3, nb:4, dt:5, jos:6, jg:7, rt:8, tb:17, jdt:18, est:19, jb:20, ps:21, pr:22, qo:23, ct:24, sg:25,
   si:26, is:27, jr:28, lm:29, ba:30, ez:31, dn:32, os:33, jl:34, am:35, ab:36, jon:37, mi:38, na:39, ha:40, so:41, ag:42, za:43,
   ml:44, "1m":45, "2m":46, mt:47, mc:48, lc:49, jn:50, ac:51, rm:52, "1co":53, "2co":54, ga:55, ep:56, ph:57, col:58,
@@ -132,7 +138,7 @@ async function ouvrir(mdp) {
   catch { $("etatVerrou").textContent = "Données incomplètes : rechargez la page dans quelques minutes."; return false; }
   segs = donnees.segments; index = donnees.index; liens = donnees.liens || {}; catv = donnees.catv || [];
   vec = new Int8Array(await dechiffrer(k, version.parties["vecteurs.bin"]));
-  parCorpus = { ldc: [], fiat: [], fil: [], cat: [], lui: [], chv: [], dlt: [], cec: [], dz: [], car: [] };
+  parCorpus = { ldc: [], fiat: [], fil: [], cat: [], lui: [], chv: [], dlt: [], cec: [], dz: [], car: [], jd: [] };
   index.forEach((ligne, rang) => parCorpus[segs[ligne].c]?.push(rang));
   try { dimanches = await (await fetch("dimanches.json")).json(); } catch {}
   $("pied").textContent = `${segs.length} segments · version du ${version.produit_le.slice(0, 10)} · modèle ${version.modele}. ` +
@@ -212,7 +218,7 @@ async function chercher() {
   r.append(section("fiat", NOMS.lui, classer(v, parCorpus.lui, 5)));
   r.append(section("fil", NOMS.fil, classer(v, parCorpus.fil, 5)));
   r.append(section("cat", NOMS.cat, classer(v, parCorpus.cat, 5)));
-  for (const code of ["car", "chv", "dlt", "cec", "dz"])
+  for (const code of ["car", "jd", "chv", "dlt", "cec", "dz"])
     if (parCorpus[code].length) r.append(section(code === "cec" || code === "dz" ? "cat" : "fil", NOMS[code], classer(v, parCorpus[code], 4)));
   $("etat").textContent = "";
 }
