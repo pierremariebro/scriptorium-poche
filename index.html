@@ -84,7 +84,8 @@ env.allowRemoteModels = !SUR_LE_PC;
 env.localModelPath = "modeles/";
 
 const $ = (id) => document.getElementById(id);
-const NOMS = { ldc: "Livre du Ciel", fiat: "Catéchisme Amen Fiat (Ph. Martin)", lui: "Ouvrages sur Luisa et la Divine Volonté", fil: "Écriture — Fillion", cat: "Chaîne d'or" };
+const NOMS = { ldc: "Livre du Ciel", fiat: "Catéchisme Amen Fiat (Ph. Martin)", lui: "Ouvrages sur Luisa et la Divine Volonté", fil: "Écriture — Fillion", cat: "Chaîne d'or", chv: "Bx Antoine Chevrier — Le Véritable Disciple",
+  dlt: "Dom Paul Delatte — Évangile et saint Paul", cec: "Catéchisme de l'Église catholique", dz: "Denzinger" };
 const LIVRES = { gn:1, ex:2, lv:3, nb:4, dt:5, jos:6, jg:7, rt:8, tb:17, jdt:18, est:19, jb:20, ps:21, pr:22, qo:23, ct:24, sg:25,
   si:26, is:27, jr:28, lm:29, ba:30, ez:31, dn:32, os:33, jl:34, am:35, ab:36, jon:37, mi:38, na:39, ha:40, so:41, ag:42, za:43,
   ml:44, "1m":45, "2m":46, mt:47, mc:48, lc:49, jn:50, ac:51, rm:52, "1co":53, "2co":54, ga:55, ep:56, ph:57, col:58,
@@ -131,7 +132,7 @@ async function ouvrir(mdp) {
   catch { $("etatVerrou").textContent = "Données incomplètes : rechargez la page dans quelques minutes."; return false; }
   segs = donnees.segments; index = donnees.index; liens = donnees.liens || {}; catv = donnees.catv || [];
   vec = new Int8Array(await dechiffrer(k, version.parties["vecteurs.bin"]));
-  parCorpus = { ldc: [], fiat: [], fil: [], cat: [], lui: [] };
+  parCorpus = { ldc: [], fiat: [], fil: [], cat: [], lui: [], chv: [], dlt: [], cec: [], dz: [] };
   index.forEach((ligne, rang) => parCorpus[segs[ligne].c]?.push(rang));
   try { dimanches = await (await fetch("dimanches.json")).json(); } catch {}
   $("pied").textContent = `${segs.length} segments · version du ${version.produit_le.slice(0, 10)} · modèle ${version.modele}. ` +
@@ -211,7 +212,20 @@ async function chercher() {
   r.append(section("fiat", NOMS.lui, classer(v, parCorpus.lui, 5)));
   r.append(section("fil", NOMS.fil, classer(v, parCorpus.fil, 5)));
   r.append(section("cat", NOMS.cat, classer(v, parCorpus.cat, 5)));
+  for (const code of ["chv", "dlt", "cec", "dz"])
+    if (parCorpus[code].length) r.append(section(code === "cec" || code === "dz" ? "cat" : "fil", NOMS[code], classer(v, parCorpus[code], 4)));
   $("etat").textContent = "";
+}
+// Chevrier, Delatte : les passages rattachés à un verset de la péricope (versets relevés dans l'ouvrage, sans calcul de proximité)
+function citants(p, code, n) {
+  const cite = (s) => (s.vv || []).filter(([ol, ch, a, b]) => ol === p.ol && ch === p.ch && a <= p.v2 && b >= p.v1).length;
+  return segs.filter((s) => s.c === code && cite(s)).sort((a, b) => cite(b) - cite(a)).slice(0, n).map((s) => ({ seg: s }));
+}
+function ajouterCitants(r, p) {
+  // Denzinger et CEC restent dans l'onglet Question (demande du Père, 04/11/2026)
+  const dlt = citants(p, "dlt", 6), chv = citants(p, "chv", 8);
+  if (dlt.length) r.append(section("fil", "Dom Paul Delatte — commentaire de ce passage", dlt));
+  if (chv.length) r.append(section("fil", "Bx Antoine Chevrier — passages qui citent ce texte", chv));
 }
 
 // ---------- Évangile du jour ----------
@@ -258,6 +272,7 @@ async function lire() {
     r.append(section("ldc", "Livre du Ciel — passages proches", fusion("ldc", 6)));
     r.append(section("fiat", "Catéchisme Amen Fiat — questions proches", fusion("fiat", 3)));
     if (lignes.every((l) => liens[l].lui)) r.append(section("fiat", "Ouvrages sur Luisa — passages proches", fusion("lui", 4)));
+    ajouterCitants(r, p);
     $("etat").textContent = "";
     return;
   }
@@ -269,6 +284,7 @@ async function lire() {
   r.append(section("ldc", "Livre du Ciel — passages proches", classer(v, parCorpus.ldc, 6)));
   r.append(section("fiat", "Catéchisme Amen Fiat — questions proches", classer(v, parCorpus.fiat, 3)));
   r.append(section("fiat", "Ouvrages sur Luisa — passages proches", classer(v, parCorpus.lui, 4)));
+  ajouterCitants(r, p);
   $("etat").textContent = "";
 }
 

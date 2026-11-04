@@ -1,22 +1,22 @@
 {
-  "produit_le": "2026-11-03T12:18:27+01:00",
+  "produit_le": "2026-11-04T11:17:39+01:00",
   "enveloppes": [
     {
-      "sel": "fc054d1d494556c21c22bbb00e6c932a",
-      "cle": "ffc2c758ea47ddedd8029f14a2139914057a9d591aac4fb9ef42b53a2c267f923f5c5f6c4a27a368563c9ab8333b531aa8428e07eaffb028a1a620e9"
+      "sel": "72777ce47306dd4947c546d2529c4d44",
+      "cle": "e8bbc0bb8f84ffbb01361be6daffcc15c87327300a9e6b6df380cb417d52fb4c8b9e754262025e4ead4d8f3c30bd9404b0edfb74e15607deb4589f4a"
     },
     {
-      "sel": "c29ada93e464320483983a817dd48db7",
-      "cle": "3a9b3939913cbb0656bf4ad90953b8eaaeda198d35b4bce9a8773037736aa0f3ef951b73860b6ac7883f2ce4fcc3d397df021c38168d2050500eed01"
+      "sel": "7e9d6cfeaee3713a10957eb91e29de96",
+      "cle": "75ed171ec8bdedd470287a5faed118fb027279422d573e71f1850bc20b506ccb7d265a43816c86cfc916f35ab4f72afe7eb15cf44d32e7d861be8378"
     },
     {
-      "sel": "f43cb6c148a91f0405174e3d86f52e42",
-      "cle": "b7f7ba51ddf283132daad3010f905928fbc7f3faf7344da18bdfeacb39ca015f58c39a237bd93c372d42ffbcd55b51b7f336a3f06af2f74d605e5a32"
+      "sel": "f41365112882c293869c35823275338b",
+      "cle": "3c61698531bd1cb62a4ca51f4780e06cda915975375a84eb83164c9ff89d0bff8145e82a1fc60e21c24e728598125394b85a6972c3a17a2c7868a063"
     }
   ],
   "iterations": 250000,
-  "segments": 27410,
-  "vecteurs": 22263,
+  "segments": 34917,
+  "vecteurs": 29770,
   "parties": {
     "donnees.bin": [
       "donnees.bin.00",
@@ -36,7 +36,10 @@
       "donnees.bin.14",
       "donnees.bin.15",
       "donnees.bin.16",
-      "donnees.bin.17"
+      "donnees.bin.17",
+      "donnees.bin.18",
+      "donnees.bin.19",
+      "donnees.bin.20"
     ],
     "vecteurs.bin": [
       "vecteurs.bin.00",
@@ -47,9 +50,12 @@
       "vecteurs.bin.05",
       "vecteurs.bin.06",
       "vecteurs.bin.07",
-      "vecteurs.bin.08"
+      "vecteurs.bin.08",
+      "vecteurs.bin.09",
+      "vecteurs.bin.10",
+      "vecteurs.bin.11"
     ]
   },
   "modele": "Xenova/multilingual-e5-small (q8)",
-  "corpus_sha256": "c77a71e189d149fc793b48252addfac10dc8bd41307cd15ee3784023cece5d98"
+  "corpus_sha256": "2e40e2d37e30da05813bcd045142dc8480ece303a7480029d9267d7cdef95504"
 }
