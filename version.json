@@ -1,22 +1,22 @@
 {
-  "produit_le": "2026-11-04T11:17:39+01:00",
+  "produit_le": "2026-11-04T12:30:34+01:00",
   "enveloppes": [
     {
-      "sel": "72777ce47306dd4947c546d2529c4d44",
-      "cle": "e8bbc0bb8f84ffbb01361be6daffcc15c87327300a9e6b6df380cb417d52fb4c8b9e754262025e4ead4d8f3c30bd9404b0edfb74e15607deb4589f4a"
+      "sel": "5f156f33a137079a6a41b131bc363fcc",
+      "cle": "081d902ee973fdbc507836f587e9a0816cd3d56ee6a0e31ef6648e49798d59580b2491c237cf5e12f80e01b64eff8f0a9d4ba8ec40979b99f2a24cc0"
     },
     {
-      "sel": "7e9d6cfeaee3713a10957eb91e29de96",
-      "cle": "75ed171ec8bdedd470287a5faed118fb027279422d573e71f1850bc20b506ccb7d265a43816c86cfc916f35ab4f72afe7eb15cf44d32e7d861be8378"
+      "sel": "3a7c8519747e3df3d616120c90b64ba8",
+      "cle": "0fe235c41a9979d9de8593e6549c639955ef7e14c226197d2029143331feef7b9504ea0445c0a022935af165fec0f5087205a302eaf87a92df304c7f"
     },
     {
-      "sel": "f41365112882c293869c35823275338b",
-      "cle": "3c61698531bd1cb62a4ca51f4780e06cda915975375a84eb83164c9ff89d0bff8145e82a1fc60e21c24e728598125394b85a6972c3a17a2c7868a063"
+      "sel": "0ee411277c117f1492f5c55c83344f0f",
+      "cle": "2a6fc1a2584bc2de5a7e9ed2fffe62f968e968885ffa114fabe50d99019a48ef0889870bf90008d62e3ec4459694490943c546fc85b7374a34222f55"
     }
   ],
   "iterations": 250000,
-  "segments": 34917,
-  "vecteurs": 29770,
+  "segments": 37286,
+  "vecteurs": 32139,
   "parties": {
     "donnees.bin": [
       "donnees.bin.00",
@@ -39,7 +39,9 @@
       "donnees.bin.17",
       "donnees.bin.18",
       "donnees.bin.19",
-      "donnees.bin.20"
+      "donnees.bin.20",
+      "donnees.bin.21",
+      "donnees.bin.22"
     ],
     "vecteurs.bin": [
       "vecteurs.bin.00",
@@ -53,9 +55,10 @@
       "vecteurs.bin.08",
       "vecteurs.bin.09",
       "vecteurs.bin.10",
-      "vecteurs.bin.11"
+      "vecteurs.bin.11",
+      "vecteurs.bin.12"
     ]
   },
   "modele": "Xenova/multilingual-e5-small (q8)",
-  "corpus_sha256": "2e40e2d37e30da05813bcd045142dc8480ece303a7480029d9267d7cdef95504"
+  "corpus_sha256": "dce55d86f26a593c318534d652ed95ccfc06b6cf8929d1b4be8d4f9c0a4ca4a5"
 }
