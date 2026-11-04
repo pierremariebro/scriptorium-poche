@@ -35,6 +35,8 @@
   .lat { font-style:italic; color:var(--doux); border-left:3px solid var(--bord); padding-left:8px; margin-top:8px; }
   .etat { color:var(--doux); font-size:15px; margin:10px 0; font-family:system-ui, sans-serif; }
   .cache { display:none; }
+  .groupe { font-family:system-ui, sans-serif; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent);
+            border-bottom:2px solid var(--bord); margin:26px 0 4px; padding-bottom:3px; }
   .avis { font-size:13.5px; color:var(--doux); border:1px solid var(--bord); border-radius:10px; padding:8px 12px; margin:10px 0;
           font-family:system-ui, sans-serif; line-height:1.4; }
   label { font-size:15px; color:var(--doux); }
@@ -91,7 +93,7 @@ env.localModelPath = "modeles/";
 
 const $ = (id) => document.getElementById(id);
 const NOMS = { ldc: "Livre du Ciel", fiat: "Catéchisme Amen Fiat (Ph. Martin)", lui: "Ouvrages sur Luisa et la Divine Volonté", fil: "Écriture — Fillion", cat: "Chaîne d'or", chv: "Bx Antoine Chevrier — Le Véritable Disciple",
-  dlt: "Dom Paul Delatte — Évangile et saint Paul", jd: "Saint Jean Damascène — Exposé exact de la foi orthodoxe", car: "Spiritualité du Carmel — Thérèse d'Avila, Jean de la Croix, Élisabeth de la Trinité", cec: "Catéchisme de l'Église catholique", dz: "Denzinger" };
+  dlt: "Dom Paul Delatte — Évangile et saint Paul", jd: "Saint Jean Damascène — Exposé exact de la foi orthodoxe", car: "Saints du Carmel — Thérèse d'Avila, Jean de la Croix, Élisabeth de la Trinité, Laurent de la Résurrection", th: "Thèse du P. Iannuzzi — Le Don de la Vie dans la Divine Volonté", cec: "Catéchisme de l'Église catholique", dz: "Denzinger" };
 const LIVRES = { gn:1, ex:2, lv:3, nb:4, dt:5, jos:6, jg:7, rt:8, tb:17, jdt:18, est:19, jb:20, ps:21, pr:22, qo:23, ct:24, sg:25,
   si:26, is:27, jr:28, lm:29, ba:30, ez:31, dn:32, os:33, jl:34, am:35, ab:36, jon:37, mi:38, na:39, ha:40, so:41, ag:42, za:43,
   ml:44, "1m":45, "2m":46, mt:47, mc:48, lc:49, jn:50, ac:51, rm:52, "1co":53, "2co":54, ga:55, ep:56, ph:57, col:58,
@@ -138,8 +140,9 @@ async function ouvrir(mdp) {
   catch { $("etatVerrou").textContent = "Données incomplètes : rechargez la page dans quelques minutes."; return false; }
   segs = donnees.segments; index = donnees.index; liens = donnees.liens || {}; catv = donnees.catv || [];
   vec = new Int8Array(await dechiffrer(k, version.parties["vecteurs.bin"]));
-  parCorpus = { ldc: [], fiat: [], fil: [], cat: [], lui: [], chv: [], dlt: [], cec: [], dz: [], car: [], jd: [] };
-  index.forEach((ligne, rang) => parCorpus[segs[ligne].c]?.push(rang));
+  parCorpus = { ldc: [], fiat: [], fil: [], cat: [], lui: [], chv: [], dlt: [], cec: [], dz: [], car: [], jd: [], th: [] };
+  // La thèse du P. Iannuzzi (Atelier Luisa) est présentée parmi les traités théologiques
+  index.forEach((ligne, rang) => parCorpus[segs[ligne].c === "lui" && segs[ligne].r?.includes("thèse de doctorat") ? "th" : segs[ligne].c]?.push(rang));
   try { dimanches = await (await fetch("dimanches.json")).json(); } catch {}
   $("pied").textContent = `${segs.length} segments · version du ${version.produit_le.slice(0, 10)} · modèle ${version.modele}. ` +
     "Usage personnel ; références à vérifier dans les éditions avant toute citation.";
@@ -213,25 +216,38 @@ async function chercher() {
   $("resultats").innerHTML = ""; $("etat").textContent = "Recherche…";
   const v = await vecteur(q);
   const r = $("resultats");
-  r.append(section("ldc", NOMS.ldc, classer(v, parCorpus.ldc, 6)));
-  r.append(section("fiat", NOMS.fiat, classer(v, parCorpus.fiat, 4)));
-  r.append(section("fiat", NOMS.lui, classer(v, parCorpus.lui, 5)));
-  r.append(section("fil", NOMS.fil, classer(v, parCorpus.fil, 5)));
-  r.append(section("cat", NOMS.cat, classer(v, parCorpus.cat, 5)));
-  for (const code of ["car", "jd", "chv", "dlt", "cec", "dz"])
-    if (parCorpus[code].length) r.append(section(code === "cec" || code === "dz" ? "cat" : "fil", NOMS[code], classer(v, parCorpus[code], 4)));
+  // Regroupement voulu par le Père (04/11/2026) : Parole de Dieu, Magistère, traités, Carmel, spiritualité, Luisa
+  for (const [titre, liste] of PLAN) {
+    groupe(r, titre);
+    for (const [code, n, couleur] of liste)
+      if (parCorpus[code].length) r.append(section(couleur, NOMS[code], classer(v, parCorpus[code], n)));
+  }
   $("etat").textContent = "";
+}
+const PLAN = [
+  ["Parole de Dieu", [["fil", 5, "fil"], ["cat", 5, "cat"], ["dlt", 4, "fil"]]],
+  ["Magistère", [["cec", 4, "cat"], ["dz", 4, "cat"]]],
+  ["Traités théologiques", [["jd", 4, "cat"], ["th", 4, "cat"]]],
+  ["Saints du Carmel", [["car", 5, "ldc"]]],
+  ["Spiritualité sacerdotale", [["chv", 4, "fil"]]],
+  ["Luisa Piccarreta et la Divine Volonté", [["ldc", 6, "ldc"], ["fiat", 4, "fiat"], ["lui", 5, "fiat"]]],
+];
+function groupe(r, titre) {
+  const g = document.createElement("div"); g.className = "groupe"; g.textContent = titre; r.append(g);
 }
 // Chevrier, Delatte : les passages rattachés à un verset de la péricope (versets relevés dans l'ouvrage, sans calcul de proximité)
 function citants(p, code, n) {
   const cite = (s) => (s.vv || []).filter(([ol, ch, a, b]) => ol === p.ol && ch === p.ch && a <= p.v2 && b >= p.v1).length;
   return segs.filter((s) => s.c === code && cite(s)).sort((a, b) => cite(b) - cite(a)).slice(0, n).map((s) => ({ seg: s }));
 }
-function ajouterCitants(r, p) {
+function ajouterDelatte(r, p) {
   // Denzinger et CEC restent dans l'onglet Question (demande du Père, 04/11/2026)
-  const dlt = citants(p, "dlt", 6), chv = citants(p, "chv", 8);
+  const dlt = citants(p, "dlt", 6);
   if (dlt.length) r.append(section("fil", "Dom Paul Delatte — commentaire de ce passage", dlt));
-  if (chv.length) r.append(section("fil", "Bx Antoine Chevrier — passages qui citent ce texte", chv));
+}
+function ajouterChevrier(r, p) {
+  const chv = citants(p, "chv", 8);
+  if (chv.length) { groupe(r, "Spiritualité sacerdotale"); r.append(section("fil", "Bx Antoine Chevrier — passages qui citent ce texte", chv)); }
 }
 
 // ---------- Évangile du jour ----------
@@ -257,6 +273,7 @@ async function lire() {
   const texte = segs.filter((s) => s.c === "fil" && s.ol === p.ol && s.ch === p.ch && s.v1 <= p.v2 && s.v2 >= p.v1)
     .sort((a, b) => a.v1 - b.v1);
   const r = $("resultats");
+  groupe(r, "Parole de Dieu");
   r.append(section("fil", "Texte — Fillion (Vulgate en regard)", texte.map((s) => ({ seg: s }))));
   if (!texte.length) { $("etat").textContent = "Passage introuvable dans Fillion."; return; }
   const ev = EVANGILES[p.ol];
@@ -275,11 +292,13 @@ async function lire() {
     } else {
       r.append(section("cat", `Chaîne d'or sur ${ev}, chapitre ${p.ch}`, fusion("cat", 6)));
     }
+    ajouterDelatte(r, p);
+    if (lignes.every((l) => liens[l].car)) { groupe(r, "Saints du Carmel"); r.append(section("ldc", NOMS.car + " — passages proches", fusion("car", 4))); }
+    ajouterChevrier(r, p);
+    groupe(r, "Luisa Piccarreta et la Divine Volonté");
     r.append(section("ldc", "Livre du Ciel — passages proches", fusion("ldc", 6)));
     r.append(section("fiat", "Catéchisme Amen Fiat — questions proches", fusion("fiat", 3)));
     if (lignes.every((l) => liens[l].lui)) r.append(section("fiat", "Ouvrages sur Luisa — passages proches", fusion("lui", 4)));
-    if (lignes.every((l) => liens[l].car)) r.append(section("ldc", NOMS.car + " — passages proches", fusion("car", 4)));
-    ajouterCitants(r, p);
     $("etat").textContent = "";
     return;
   }
@@ -288,10 +307,14 @@ async function lire() {
     const rangs = parCorpus.cat.filter((rg) => { const s = segs[index[rg]]; return s.ev === ev && s.ch === p.ch; });
     r.append(section("cat", `Chaîne d'or sur ${ev}, chapitre ${p.ch}`, classer(v, rangs, 6)));
   }
+  ajouterDelatte(r, p);
+  groupe(r, "Saints du Carmel");
+  r.append(section("ldc", NOMS.car + " — passages proches", classer(v, parCorpus.car, 4)));
+  ajouterChevrier(r, p);
+  groupe(r, "Luisa Piccarreta et la Divine Volonté");
   r.append(section("ldc", "Livre du Ciel — passages proches", classer(v, parCorpus.ldc, 6)));
   r.append(section("fiat", "Catéchisme Amen Fiat — questions proches", classer(v, parCorpus.fiat, 3)));
   r.append(section("fiat", "Ouvrages sur Luisa — passages proches", classer(v, parCorpus.lui, 4)));
-  ajouterCitants(r, p);
   $("etat").textContent = "";
 }
 
