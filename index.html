@@ -101,6 +101,21 @@ const LIVRES = { gn:1, ex:2, lv:3, nb:4, dt:5, jos:6, jg:7, rt:8, tb:17, jdt:18,
   matthieu:47, marc:48, luc:49, jean:50, "1r":9, "2r":10 };
 const EVANGILES = { 47: "Matthieu", 48: "Marc", 49: "Luc", 50: "Jean" };
 
+// ---------- Compteur d'usage anonyme (accord du Père, 19/11/2026) ----------
+// Compte seulement des totaux (ouvertures, appareils, déverrouillages, recherches, lectures) :
+// ni nom, ni mot de passe, ni question, ni cookie. Les totaux se lisent au cellier-économat.
+// Hors connexion ou sur le PC, rien n'est compté.
+const COMPTEUR = "https://abacus.jasoncameron.dev/hit/scriptorium-poche/";
+function compter(cle) {
+  if (SUR_LE_PC || !navigator.onLine) return;
+  fetch(COMPTEUR + cle + "?t=" + Date.now(), { cache: "no-store" }).catch(() => {});
+}
+// Compte une seule fois par appareil (repère gardé sur l'appareil, sans identifiant).
+function compterUneFois(cle) {
+  try { if (localStorage.getItem("compte-" + cle)) return; localStorage.setItem("compte-" + cle, "1"); } catch { return; }
+  compter(cle);
+}
+
 let segs, index, vec, parCorpus, modele, liens = {}, catv = [], dimanches = {};
 
 // ---------- Déchiffrement ----------
@@ -145,10 +160,12 @@ async function ouvrir(mdp) {
   index.forEach((ligne, rang) => parCorpus[segs[ligne].c === "lui" && segs[ligne].r?.includes("thèse de doctorat") ? "th" : segs[ligne].c]?.push(rang));
   try { dimanches = await (await fetch("dimanches.json")).json(); } catch {}
   $("pied").textContent = `${segs.length} segments · version du ${version.produit_le.slice(0, 10)} · modèle ${version.modele}. ` +
-    "Usage personnel ; références à vérifier dans les éditions avant toute citation.";
+    "Usage personnel ; références à vérifier dans les éditions avant toute citation. " +
+    "Un compteur anonyme relève seulement le nombre d'utilisations, sans aucune donnée personnelle.";
   $("verrou").classList.add("cache"); $("app").classList.remove("cache");
   preparerJour();
   chargerModele();
+  compter("deverrouillages"); compterUneFois("appareils-utilisateurs");
   return true;
 }
 
@@ -214,6 +231,7 @@ function vulgate(ol, ch, v1, v2) {
 async function chercher() {
   const q = $("question").value.trim(); if (!q) return;
   $("resultats").innerHTML = ""; $("etat").textContent = "Recherche…";
+  compter("recherches");
   const v = await vecteur(q);
   const r = $("resultats");
   // Regroupement voulu par le Père (04/11/2026) : Parole de Dieu, Magistère, traités, Carmel, spiritualité, Luisa
@@ -270,6 +288,7 @@ async function lire() {
   const p = analyser($("pericope").value);
   if (!p) { $("etat").textContent = "Référence non reconnue. Exemple : Lc 12, 39-48"; return; }
   $("resultats").innerHTML = ""; $("etat").textContent = "Lecture…";
+  compter("lectures");
   const texte = segs.filter((s) => s.c === "fil" && s.ol === p.ol && s.ch === p.ch && s.v1 <= p.v2 && s.v2 >= p.v1)
     .sort((a, b) => a.v1 - b.v1);
   const r = $("resultats");
@@ -341,6 +360,7 @@ $("ouvrir").onclick = async () => {
 $("mdp").onkeydown = (e) => { if (e.key === "Enter") $("ouvrir").click(); };
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+compter("ouvertures"); compterUneFois("appareils");
 try { const m = localStorage.getItem("mdp"); if (m) ouvrir(m); } catch {}
 </script>
 </body>
