@@ -11,6 +11,7 @@ self.addEventListener("activate", (e) => e.waitUntil(
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
+  if (new URL(e.request.url).hostname === "abacus.jasoncameron.dev") return;  // compteur anonyme : jamais en cache
   const local = new URL(e.request.url).origin === location.origin;
   e.respondWith(caches.open(CACHE).then(async (c) => {
     const garde = await c.match(e.request);
